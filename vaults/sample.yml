@@ -1,0 +1,22 @@
+---
+all: {vars: {mbtileserver_servers: mbtileserver_servers}}
+mbtileserver:
+  children:
+    mbtileserver_servers:
+      children:
+        mbtileserver_prod:
+          hosts: {prod-docker-mbtiles.foo.net: {}}
+          vars:
+            mbtileserver_domain: tilestream.foo.net
+  vars:
+    mbtileserver_domain: "{{mbtileserver_domain}}"
+    mbtileserver_tld_domain: "foo.net"
+    mbtileserver_hostname:  "{{cops_mbtileserver_domain}}"
+    mbtileserver_sentry: "https://9d5423587@sentry.foo.net/27"
+    mbtileserver_root_url: /v2
+    mbtileserver_ftp_port: "22000"
+    # mbtileserver_ftp_publichost: "51.91.18.206"
+    mbtileserver_ftp_publichost: "46.105.58.232"
+    mbtileserver_ftp_password:  ySszqd5f4qsd564f56qsd4f65qs4
+    #haproxy_regexes: [".*tilestream\\.foo\\.net", ".*mbtiles\\.foo\\.net"]
+

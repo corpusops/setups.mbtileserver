@@ -1,0 +1,5 @@
+---
+- include_role: {name: mbtileserver/layout}
+  tags: [mbtileserver_layout, layout]
+- include_role: {name: mbtileserver/configs}
+  tags: [mbtileserver_configs, configs]

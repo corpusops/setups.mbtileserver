@@ -1,0 +1,22 @@
+- include_tasks: docker_login.yml
+  with_items: "{{mbtileserver_registries}}"
+  tags: [mbtileserver_login, login, docker_login]
+- shell: |
+    set -ex
+    cd "{{mbtileserver_hostdir}}"
+    : {{mbtileserver_dc}} build {{mbtileserver_build_args}}
+  when:
+  - "mbtileserver_build|copsf_asbool"
+  - "mbtileserver_build_args|copsf_asbool"
+  tags: [mbtileserver_login, login, docker_login]
+# ensure all images are (re) pulled
+- shell: |
+    set -ex
+    cd "{{mbtileserver_hostdir}}"
+    {{mbtileserver_dc}} pull {{mbtileserver_pull_args}}
+  retries: 5
+  delay: 10
+  when:
+  - "mbtileserver_pull|copsf_asbool"
+  tags: [mbtileserver_pull, pull, docker_pull]
+

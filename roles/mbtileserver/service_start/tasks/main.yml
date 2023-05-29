@@ -1,0 +1,13 @@
+- include_role: {name: corpusops.roles/docker_compose_service}
+  vars:
+    _docker_compose_service:
+      project: "{{mbtileserver_compose_project}}"
+      state: "{{mbtileserver_started_state}}"
+      working_directory: "{{mbtileserver_hostdir}}"
+      stdout: "{{mbtileserver_stdout}}"
+      stderr: "{{mbtileserver_stderr}}"
+- shell: |-
+    set -ex
+    cd "{{mbtileserver_hostdir}}"
+    docker-compose -p {{mbtileserver_compose_project}} up -d
+  tags: [mbtileserver_restart_services]

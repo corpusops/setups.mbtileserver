@@ -1,0 +1,15 @@
+- include_role: {name: corpusops.roles/docker_compose_service}
+  vars:
+    _docker_compose_service:
+      project: "{{mbtileserver_compose_project}}"
+      state: "{{mbtileserver_stopped_state}}"
+      working_directory: "{{mbtileserver_hostdir}}"
+      stdout: "{{mbtileserver_stdout}}"
+      stderr: "{{mbtileserver_stderr}}"
+  tags: [service_stop]
+- shell: |-
+    set -ex
+    if [ ! -e "{{mbtileserver_hostdir}}/{{mbtileserver_compose_files[0]}}" ];then exit 0;fi
+    cd {{mbtileserver_hostdir}}
+    docker-compose down
+  tags: [service_dockercompose_stop]

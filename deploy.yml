@@ -1,0 +1,10 @@
+---
+# APP
+- hosts: "{{mbtileserver_servers|default('all')}}"
+  roles: [corpusops.roles/ansible_plugins]
+  tasks:
+  - when: ["mbtileserver_lifecycle_app|default(true)"]
+    tags: ["mbtileserver_lifecycle_app"]
+    block:
+    - include_role: {name: mbtileserver/vars, public: true, allow_duplicates: false}
+    - include_role: {name: mbtileserver,      public: true, allow_duplicates: false}

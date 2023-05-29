@@ -1,0 +1,23 @@
+---
+- set_fact:
+    mbtileserver_host_dirs: |
+        {% set directories = [] %}
+        {% for mbtileserver_volume in mbtileserver_volumes %}
+        {% set d = mbtileserver_volume.split(':')[0] %}
+        {% set _ = directories.append(d) %}
+        {% endfor %}
+        {% set _ = directories.append(mbtileserver_data_volume) %}
+        {{ directories | to_json }}
+- file:
+    path: "{{item}}"
+    mode: "0711"
+    state: directory
+  with_items: "{{mbtileserver_host_dirs}}"
+- file:
+    state: directory
+    path: "{{mbtileserver_versioned_hostdir}}"
+- file:
+    state: link
+    force: true
+    src: "{{mbtileserver_versioned_hostdir}}"
+    path: "{{mbtileserver_hostdir}}"

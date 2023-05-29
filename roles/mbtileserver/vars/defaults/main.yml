@@ -1,0 +1,133 @@
+---
+mbtileserver_dir: "/srv/docker/{{mbtileserver_name}}"
+mbtileserver_versioned_hostdir: "{{mbtileserver_basedir}}/{{mbtileserver_version}}"
+mbtileserver_hostdir: "{{mbtileserver_basedir}}/current"
+mbtileserver_services_image: corpusops/alpine-bare
+mbtileserver_volumes:
+- "{{mbtileserver_hostdir}}"
+mbtileserver_basedir: /srv/docker/mbtileserver
+mbtileserver_data_volume: "{{mbtileserver_basedir}}/data"
+mbtileserver_tiles_dir: "{{mbtileserver_data_volume}}/tiles"
+mbtileserver_vversion: "v{{mbtileserver_version}}"
+mbtileserver_docker_image: consbio/mbtileserver
+mbtileserver_version: 0.8.1
+mbtileserver_name: mbtileserver
+mbtileserver_code_dir: "{{playbook_dir}}"
+mbtileserver_tld_domain: example.com
+# set to a domain to activate collabora
+mbtileserver_hostname: "{{mbtileserver_name}}.{{mbtileserver_tld_domain}}"
+mbtileserver_alternate_hostnames: ["{{mbtileserver_hostname}}", "www.{{mbtileserver_hostname}}"]
+mbtileserver_gateway: "{{ ansible_default_ipv4.address}}"
+mbtileserver_image: "{{mbtileserver_docker_image}}:{{mbtileserver_version}}"
+mbtileserver_composename: "{{mbtileserver_name}}"
+mbtileserver_compose_project: "{{mbtileserver_composename}}"
+mbtileserver_stopped_state: stopped
+mbtileserver_started_state: started
+mbtileserver_stdout: /dev/null
+mbtileserver_stderr: /dev/null
+mbtileserver_build_args: "--no-cache --pull"
+# backup could be remove in a-while when we have redeployed it everywhere
+mbtileserver_restarted_services_default: "setup-services"
+mbtileserver_restarted_services: "{{mbtileserver_restarted_services_default}}"
+mbtileserver_force_sync_ssh_user: null
+mbtileserver_sync_ssh_user: ""
+mbtileserver_sshargs: >-
+  {% set k = hostvars[inventory_hostname].get(
+                'ansible_ssh_private_key_file', '') %}
+  {% if k%}-o IdentityFile={{k}} -o IdentitiesOnly=yes{%endif%}
+  {% if (
+      hostvars[inventory_hostname].ansible_connection|default('ssh')
+     ) not in [ 'smart', 'local'] %}
+  {{ hostvars[inventory_hostname].ssh_args | default('') }}
+  {{ hostvars[inventory_hostname].ansible_ssh_args | default('') }}
+  {{ hostvars[inventory_hostname].ansible_ssh_common_args | default('') }}
+  {{ hostvars[inventory_hostname].ansible_ssh_extra_args | default('') }}
+  {% endif %}
+  {% if((mbtileserver_force_sync_ssh_user) or
+        (mbtileserver_sync_ssh_user and (mbtileserver_force_sync_ssh_user == True))
+    )%}
+  {% set user = mbtileserver_sync_ssh_user or ansible_user or '' %}
+  {% if user %}-l {{user}}{% endif %}
+  {% endif %}
+mbtileserver_build: false
+mbtileserver_pull: true
+mbtileserver_registries: []
+#- {registry: registry.foo.net, username: foo, password: bar}
+mbtileserver_compose_files: [docker-compose.yml]
+mbtileserver_dc: docker-compose
+mbtileserver_hosts_whitelist: "{{(
+    [mbtileserver_hostname, '0.0.0.0', '.{0}'.format(mbtileserver_hostname)]+
+    mbtileserver_alternate_hostnames
+  )|join('-|_')}}"
+mbtileserver_docker_env_freeform: |-
+  {{ mbtileserver_docker_env_defaults}}
+  {{ mbtileserver_docker_env_extra}}
+mbtileserver_docker_env_defaults: |-
+  #
+# very small, perfect for testing purpose
+mbtileserver_pull_args: ""
+mbtileserver_network: 172.34.8
+mbtileserver_has_ftp: true
+mbtileserver_ftp_clients: "50"
+mbtileserver_listening_if: "0.0.0.0"
+mbtileserver_listening_int_if: "127.0.0.1"
+mbtileserver_listening_port: "80"
+mbtileserver_listening_int_port: "8080"
+mbtileserver_ftp_publichost: "{{ansible_default_ipv4.address}}"
+mbtileserver_ftp_port: "22000"
+mbtileserver_ftp_passive_port_range_len: "100"
+mbtileserver_ftp_passive_ports: "{{mbtileserver_ftp_port|int+1}}:{{mbtileserver_ftp_port|int + mbtileserver_ftp_passive_port_range_len|int}}"
+mbtileserver_ftp_home: /tiles
+mbtileserver_ftp_user: tiles
+mbtileserver_ftp_uid: 1000
+mbtileserver_ftp_password: secretiA7bW1dS9bO4hM8p
+mbtileserver_dotenv: |-
+  # ftp
+  FTP_USER_HOME={{mbtileserver_ftp_home}}
+  FTP_USER_NAME={{mbtileserver_ftp_user}}
+  FTP_USER_PASS={{mbtileserver_ftp_password}}
+  FTP_USER_UID={{mbtileserver_ftp_uid}}
+  FTP_PASSIVE_PORTS={{mbtileserver_ftp_passive_ports}}
+  PUBLICHOST={{mbtileserver_ftp_publichost}}
+  FTP_MAX_CONNECTIONS={{mbtileserver_ftp_clients}}
+  FTP_MAX_CLIENTS={{mbtileserver_ftp_clients}}
+  FTP_PUBLICHOST={{mbtileserver_ftp_publichost}}
+  FTP_PORT={{mbtileserver_ftp_port}}
+  FTP_PORT_RANGE={{mbtileserver_ftp_passive_ports.replace(':', '-')}}
+  FTP_CLIENTS={{mbtileserver_ftp_clients}}
+  #
+  TILES_DATA_DIR={{mbtileserver_tiles_dir}}
+  LISTENING_IF={{mbtileserver_listening_if}}
+  LISTENING_INT_IF={{mbtileserver_listening_int_if}}
+  LISTENING_PORT={{mbtileserver_listening_port}}
+  LISTENING_INT_PORT={{mbtileserver_listening_int_port}}
+  DOCKER_BUILDKIT=1
+  COMPOSE_DOCKER_CLI_BUILD=1
+  BUILDKIT_PROGRESS=plain
+  BUILDKIT_INLINE_CACHE=1
+  COMPOSE_PROJECT_NAME={{mbtileserver_composename}}
+  CONTROL_COMPOSE_FILES={{mbtileserver_compose_files|join(' ')}}
+  COMPOSE_FILE={{mbtileserver_compose_files|join(':')}}
+  MBTILESERVER_NETWORK={{mbtileserver_network}}
+  SERVICES_IMAGE={{mbtileserver_services_image}}
+  MBS_IMAGE={{mbtileserver_image}}
+  {% macro envd(k, v) %}{{v and '{0}={1}'.format(k, v) or ''}}{% endmacro %}
+  {{ envd('PORT', 8080) }}
+  {{ envd('AUTO_TLS', mbtileserver_tls) }}
+  {{ envd('DSN', mbtileserver_sentry) }}
+  {{ envd('TILE_DIR', '/tiles') }}
+  {{ envd('ROOT_URL', mbtileserver_root_url) }}
+  {{ envd('VERBOSE', mbtileserver_verbose|string|lower) }}
+  {{ envd('ENABLE_ARCGIS', mbtileserver_arcgis|string|lower) }}
+  {{ envd('ENABLE_FS_WATCH', mbtileserver_fswatch|string|lower) }}
+  {{ envd('ENABLE_RELOAD_SIGNAL', mbtileserver_reloadsig|string|lower) }}
+mbtileserver_tls: false
+mbtileserver_verbose: true
+mbtileserver_arcgis: true
+mbtileserver_fswatch: true
+mbtileserver_reloadsig: true
+mbtileserver_root_url: "/services"
+mbtileserver_dotenv_extra: ""
+# free form for params inside dockerenv
+mbtileserver_docker_env_extra: ""
+mbtileserver_sentry: ""

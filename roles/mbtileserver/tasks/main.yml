@@ -1,0 +1,13 @@
+---
+- include_role: {name: corpusops.roles/services_virt_docker}
+  tags: [docker_setup, docker_prerequisites]
+- include_role: {name: mbtileserver/service_stop}
+  tags: [service, mbtileserver_service, mbtileserver_service_stop]
+- include_role: {name: mbtileserver/configure}
+  tags: [configs, mbtileserver_configure]
+- include_role: {name: mbtileserver/docker}
+  tags: [docker_setup, docker_login, docker_pull]
+- include_role: {name: mbtileserver/service_start}
+  tags: [service, mbtileserver_service, mbtileserver_service_start]
+- include_role: {name: mbtileserver/post}
+  tags: [post]
